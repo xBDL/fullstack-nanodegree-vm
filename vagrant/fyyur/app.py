@@ -102,8 +102,8 @@ def venues():
   for venue in venues_by_area:
     venue_id = venue.id
     name = venue.name
-    city = venue.city
-    state = venue.state
+    city = venue.city.title()
+    state = venue.state.upper()
 
     area = f'{state} {city}'
     if area not in areas:
@@ -114,28 +114,9 @@ def venues():
     ## TODO: implement num_upcoming_shows
     num = -1
 
-    #print(f'VENUE NAME {venue.name}', flush=True)
-
-    #venue_list = areas[area]['venues']
-    #print(f'VENUE LIST {venue_list}', flush=True)
-
-    #new_venue = {'id': venue_id,
-    #             'name': name, 
-    #             'num_upcoming_shows': num}
-    #print(f'NEW VENUE {new_venue}', flush=True)
-
     areas[area]['venues'].append({'id': venue_id,
                                   'name': name, 
                                   'num_upcoming_shows': num})
-    #updated_venue_list = areas[area]['venues']
-    #print(f'UPDATED VENUE LIST {updated_venue_list}', flush=True)
-
-    #new_venue_list = venue_list + [new_venue]
-    #print(f'NEW VENUE LIST {new_venue_list}', flush=True)
-
-    #areas[area]['venues'] = new_venue_list
-    #updated_venue_list = areas[area]['venues']
-    #print(f'UPDATED VENUE LIST {updated_venue_list}', flush=True)
 
   data=[{
     "city": "San Francisco",
@@ -159,13 +140,10 @@ def venues():
     }]
   }]
 
-  for area in areas.keys():
-    print(areas[area], flush=True)
-    data.append(areas[area])
+  areas = list(areas.values())
+  #data.extend(areas)
 
-  print(data, flush=True)
-
-  return render_template('pages/venues.html', areas=data);
+  return render_template('pages/venues.html', areas=areas);
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
