@@ -94,18 +94,61 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
+
+  areas = {}
+
+  venues_by_area = Venue.query.group_by(Venue.id, Venue.city, Venue.state).all()
+
+  for venue in venues_by_area:
+    venue_id = venue.id
+    name = venue.name
+    city = venue.city
+    state = venue.state
+
+    area = f'{state} {city}'
+    if area not in areas:
+      areas[area] = {'city': city, 
+                     'state': state, 
+                     'venues': []}
+
+    ## TODO: implement num_upcoming_shows
+    num = -1
+
+    #print(f'VENUE NAME {venue.name}', flush=True)
+
+    #venue_list = areas[area]['venues']
+    #print(f'VENUE LIST {venue_list}', flush=True)
+
+    #new_venue = {'id': venue_id,
+    #             'name': name, 
+    #             'num_upcoming_shows': num}
+    #print(f'NEW VENUE {new_venue}', flush=True)
+
+    areas[area]['venues'].append({'id': venue_id,
+                                  'name': name, 
+                                  'num_upcoming_shows': num})
+    #updated_venue_list = areas[area]['venues']
+    #print(f'UPDATED VENUE LIST {updated_venue_list}', flush=True)
+
+    #new_venue_list = venue_list + [new_venue]
+    #print(f'NEW VENUE LIST {new_venue_list}', flush=True)
+
+    #areas[area]['venues'] = new_venue_list
+    #updated_venue_list = areas[area]['venues']
+    #print(f'UPDATED VENUE LIST {updated_venue_list}', flush=True)
+
   data=[{
     "city": "San Francisco",
     "state": "CA",
     "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
+                "id": 1,
+                "name": "The Musical Hop",
+                "num_upcoming_shows": 0,
+              }, {
+                "id": 3,
+                "name": "Park Square Live Music & Coffee",
+                "num_upcoming_shows": 1,
+              }]
   }, {
     "city": "New York",
     "state": "NY",
@@ -115,6 +158,13 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
+
+  for area in areas.keys():
+    print(areas[area], flush=True)
+    data.append(areas[area])
+
+  print(data, flush=True)
+
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
