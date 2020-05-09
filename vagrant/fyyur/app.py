@@ -97,9 +97,9 @@ def venues():
 
   areas = {}
 
-  venues_by_area = Venue.query.group_by(Venue.id, Venue.city, Venue.state).all()
+  venues = db.session.query(Venue.id, Venue.name, Venue.city, Venue.state).all()
 
-  for venue in venues_by_area:
+  for venue in venues:
     venue_id = venue.id
     name = venue.name
     city = venue.city.title()
