@@ -97,7 +97,11 @@ def venues():
 
   areas = {}
 
-  venues = db.session.query(Venue.id, Venue.name, Venue.city, Venue.state).all()
+  #venues = db.session.query(Venue.id, Venue.name, Venue.city, Venue.state).all()
+  venues = Venue.query.with_entities(Venue.id, 
+                                     Venue.name, 
+                                     Venue.city, 
+                                     Venue.state)
 
   for venue in venues:
     venue_id = venue.id
@@ -112,7 +116,7 @@ def venues():
                      'venues': []}
 
     ## TODO: implement num_upcoming_shows
-    num = -1
+    num = 999
 
     areas[area]['venues'].append({'id': venue_id,
                                   'name': name, 
@@ -163,7 +167,7 @@ def search_venues():
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
+  
   data1={
     "id": 1,
     "name": "The Musical Hop",
@@ -241,8 +245,51 @@ def show_venue(venue_id):
     "past_shows_count": 1,
     "upcoming_shows_count": 1,
   }
+
   data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
-  return render_template('pages/show_venue.html', venue=data)
+
+  print(f'MOCK DATA {data}', flush=True)
+  
+  venue = Venue.query.get(venue_id)
+  print(f'VENUE RECORD {venue}', flush=True)
+
+
+  # TODO-------------------------------------------------------------------
+  past_shows_count = 999
+  upcoming_shows_count = 999
+  upcoming_shows = [{'artist_id': 5,
+                     'artist_name': 'Matt Quevedo',
+                     'artist_image_link': 'https://images.unsplash.com',
+                     'start_time': '2019-06-15T23:00:00.000Z'}]
+  past_shows = [{'artist_id': 6,
+                 'artist_name': 'The Wild Sax Band',
+                 'artist_image_link': 'https://images.unsplash.com',
+                 'start_time': '2035-04-01T20:00:00.000Z'},
+                {'artist_id': 6,
+                 'artist_name': 'The Wild Sax Band',
+                 'artist_image_link': 'https://images.unsplash.com',
+                 'start_time': '2035-04-08T20:00:00.000Z'}]
+  #------------------------------------------------------------------------
+
+  venue = {'id': venue.id,
+           'name': venue.name,
+           'genres': venue.genres,
+           'address': venue.address,
+           'city': venue.city,
+           'state': venue.state,
+           'phone': venue.phone,
+           'website': venue.website,
+           'facebook_link': venue.facebook_link,
+           'seeking_talent': venue.seeking_talent,
+           'seeking_description': venue.seeking_description,
+           'image_link': venue.image_link,
+           'past_shows': past_shows,
+           'upcoming_shows': upcoming_shows,
+           'past_shows_count': past_shows_count,
+           'upcoming_shows_count': upcoming_shows_count}
+
+  
+  return render_template('pages/show_venue.html', venue=venue)
 
 #  Create Venue
 #  ----------------------------------------------------------------
