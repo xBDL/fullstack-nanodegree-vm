@@ -81,7 +81,7 @@ def format_datetime(value, format='medium'):
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
       format="EE MM, dd, y h:mma"
-  return babel.dates.format_datetime(date, format)
+  return babel.dates.format_datetime(date, format, locale='en')
 
 app.jinja_env.filters['datetime'] = format_datetime
 
@@ -201,19 +201,18 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-    # TODO: modify data to be the data object returned from db insertion
     new_venue = Venue(name = request.form['name'], 
-                    genres = request.form.getlist('genres'), 
-                    address = request.form['address'], 
-                    city = request.form['city'], 
-                    state = request.form['state'], 
-                    phone = request.form['phone'], 
-                    #website = 
-                    facebook_link = request.form['facebook_link'], 
-                    #seeking_talent = 
-                    #seeking_description = 
-                    #image_link = 
-                    )
+                      genres = request.form.getlist('genres'), 
+                      address = request.form['address'], 
+                      city = request.form['city'], 
+                      state = request.form['state'], 
+                      phone = request.form['phone'], 
+                      #website = 
+                      facebook_link = request.form['facebook_link'], 
+                      #seeking_talent = 
+                      #seeking_description = 
+                      #image_link = 
+                      )
 
     try:
         db.session.add(new_venue)
@@ -221,7 +220,7 @@ def create_venue_submission():
         flash('Venue ' + request.form['name'] + ' was successfully listed!')
 
     except:
-        flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+        flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
     
     finally:
         return render_template('pages/home.html')
@@ -379,7 +378,7 @@ def create_artist_submission():
         flash('Artist ' + request.form['name'] + ' was successfully listed!')
 
     except:
-        flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+        flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
   
     finally:
         return render_template('pages/home.html')
