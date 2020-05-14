@@ -156,7 +156,7 @@ def show_venue(venue_id):
   venue.past_shows = []
   venue.upcoming_shows = []
 
-  shows = Show.query.filter(Show.venue_id==venue_id) 
+  shows = Show.query.filter(venue.id==Show.venue_id) 
   for show in shows:
     artist = Artist.query.filter(show.artist_id==Artist.id).one()
     
@@ -170,9 +170,6 @@ def show_venue(venue_id):
     
     else:
       venue.upcoming_shows.append(data)
-
-    venue.past_shows_count = len(venue.past_shows)
-    venue.upcoming_shows_count = len(venue.upcoming_shows)
 
   data = {'id': venue.id,
           'name': venue.name,
@@ -188,8 +185,8 @@ def show_venue(venue_id):
           'image_link': venue.image_link,
           'past_shows': venue.past_shows,
           'upcoming_shows': venue.upcoming_shows,
-          'past_shows_count': venue.past_shows_count,
-          'upcoming_shows_count': venue.upcoming_shows_count}
+          'past_shows_count': len(venue.past_shows),
+          'upcoming_shows_count': len(venue.upcoming_shows)}
 
   
   return render_template('pages/show_venue.html', venue=data)
@@ -264,26 +261,25 @@ def search_artists():
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-  # shows the venue page with the given venue_id
 
   artist = Artist.query.get(artist_id)
+  artist.past_shows = []
+  artist.upcoming_shows = []
 
-  # TODO-------------------------------------------------------------------
-  past_shows_count = 999
-  upcoming_shows_count = 999
-  upcoming_shows = [{"venue_id": 3,
-                     "venue_name": "Park Square Live Music & Coffee",
-                     "venue_image_link": "https://images.unsplash.com",
-                     "start_time": "2035-04-01T20:00:00.000Z"}]
-  past_shows = [{"venue_id": 3,
-                 "venue_name": "Park Square Live Music & Coffee",
-                 "venue_image_link": "https://images.unsplash.com",
-                 "start_time": "2035-04-08T20:00:00.000Z"},
-                {"venue_id": 3,
-                 "venue_name": "Park Square Live Music & Coffee",
-                 "venue_image_link": "https://images.unsplash.com",
-                 "start_time": "2035-04-15T20:00:00.000Z"}]
-  #------------------------------------------------------------------------
+  shows = Show.query.filter(artist.id==Show.artist_id) 
+  for show in shows:
+    venue = Venue.query.filter(show.venue_id==Venue.id).one()
+    
+    data = {'venue_id': show.venue_id,
+            'venue_name': venue.name,
+            'venue_image_link': venue.image_link,
+            'start_time': show.start_time}
+
+    if show.start_time < str(datetime.now()):
+      artist.past_shows.append(data)
+    
+    else:
+      artist.upcoming_shows.append(data)
 
   artist = {'id': artist.id,
             'name': artist.name,
@@ -291,15 +287,15 @@ def show_artist(artist_id):
             'city': artist.city,
             'state': artist.state,
             'phone': artist.phone,
-            #'website': 
-            #'facebook_link': artist.facebook_link,
+            'website': artist.website, 
+            'facebook_link': artist.facebook_link,
             'seeking_venue': artist.seeking_venue,
             'seeking_description': artist.seeking_description,
             'image_link': artist.image_link,
-            'past_shows': past_shows,
-            'upcoming_shows': upcoming_shows,
-            'past_shows_count': past_shows_count,
-            'upcoming_shows_count': upcoming_shows_count}  
+            'past_shows': artist.past_shows,
+            'upcoming_shows': artist.upcoming_shows,
+            'past_shows_count': len(artist.past_shows),
+            'upcoming_shows_count': len(artist.upcoming_shows)}  
 
   return render_template('pages/show_artist.html', artist=artist)
 
