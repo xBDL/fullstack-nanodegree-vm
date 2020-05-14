@@ -8,14 +8,16 @@ import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
-
-from sqlalchemy.sql import func
-
 from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+
+
+from datetime import datetime
+from sqlalchemy.sql import func
+
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -97,7 +99,6 @@ def index():
 
 @app.route('/venues')
 def venues():
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
 
   areas = {}
 
@@ -111,13 +112,10 @@ def venues():
                 .group_by(Venue)\
                 .all()
 
-
   for venue in venues:
-    venue_id = venue.id
-    name = venue.name
+
     city = venue.city.title()
     state = venue.state.upper()
-    num_shows = venue.num_shows
 
     area = (city, state)
     if area not in areas:
@@ -125,11 +123,11 @@ def venues():
                      'state': state, 
                      'venues': []}
 
-    print(f'----- {venue.name} has {num_shows} shows -----', flush=True) ############################################################################delete
+    print(f'----- {venue.name} has {venue.num_shows} shows -----', flush=True) ############################################################################delete
 
-    areas[area]['venues'].append({'id': venue_id,
-                                  'name': name, 
-                                  'num_upcoming_shows': num_shows})
+    areas[area]['venues'].append({'id': venue.id,
+                                  'name': venue.name, 
+                                  'num_upcoming_shows': venue.num_shows})
 
   areas = list(areas.values())
 
@@ -155,23 +153,26 @@ def show_venue(venue_id):
   # shows the venue page with the given venue_id
 
   venue = Venue.query.get(venue_id)
+  venue.past_shows = []
+  venue.upcoming_shows = []
 
-  # TODO-------------------------------------------------------------------
-  past_shows_count = 999
-  upcoming_shows_count = 999
-  upcoming_shows = [{'artist_id': 5,
-                     'artist_name': 'Matt Quevedo',
-                     'artist_image_link': 'https://images.unsplash.com',
-                     'start_time': '2019-06-15T23:00:00.000Z'}]
-  past_shows = [{'artist_id': 6,
-                 'artist_name': 'The Wild Sax Band',
-                 'artist_image_link': 'https://images.unsplash.com',
-                 'start_time': '2035-04-01T20:00:00.000Z'},
-                {'artist_id': 6,
-                 'artist_name': 'The Wild Sax Band',
-                 'artist_image_link': 'https://images.unsplash.com',
-                 'start_time': '2035-04-08T20:00:00.000Z'}]
-  #------------------------------------------------------------------------
+  shows = Show.query.filter(Show.venue_id==venue_id) 
+  for show in shows:
+    artist = Artist.query.filter(show.artist_id==Artist.id).one()
+    
+    data = {'artist_id': show.artist_id,
+            'artist_name': artist.name,
+            'artist_image_link': artist.image_link,
+            'start_time': show.start_time}
+
+    if show.start_time < str(datetime.now()):
+      venue.past_shows.append(data)
+    
+    else:
+      venue.upcoming_shows.append(data)
+
+    venue.past_shows_count = len(venue.past_shows)
+    venue.upcoming_shows_count = len(venue.upcoming_shows)
 
   data = {'id': venue.id,
           'name': venue.name,
@@ -185,10 +186,10 @@ def show_venue(venue_id):
           'seeking_talent': venue.seeking_talent,
           'seeking_description': venue.seeking_description,
           'image_link': venue.image_link,
-          'past_shows': past_shows,
-          'upcoming_shows': upcoming_shows,
-          'past_shows_count': past_shows_count,
-          'upcoming_shows_count': upcoming_shows_count}
+          'past_shows': venue.past_shows,
+          'upcoming_shows': venue.upcoming_shows,
+          'past_shows_count': venue.past_shows_count,
+          'upcoming_shows_count': venue.upcoming_shows_count}
 
   
   return render_template('pages/show_venue.html', venue=data)
